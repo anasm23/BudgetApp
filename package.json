@@ -27,6 +27,7 @@
     "joi": "^17.3.0",
     "lite-server": "^2.3.0",
     "mongoose": "^5.5.15",
+    "node":"15.4.0",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
