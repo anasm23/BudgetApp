@@ -1,75 +1,82 @@
-// Declare files to cache
+'use strict'
+
+console.log('This is your service-worker.js file!');
+
 const FILES_TO_CACHE = [
-    "./",
-    "./index.html",
-    "./index.js",
-    "./style.css",
-    "public/icons/icon192x192.png",
-    "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
-    "https://cdn.jsdelivr.net/npm/chart.js@2.8.0"
+    `/db.js`,
+    `/index.html`,
+    `/index.js`,
+    `/index.css`,
+    `/manifest.webmanifest`,
+    `/img/icons/icon.png`
 ];
-/////
-const CACHE_NAME = "static-cache-v1";
-const DATA_CACHE_NAME = 'data-cache-v1'
-//////
-// install
-self.addEventListener("install", (evt) => {
-  evt.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_CACHE);
-    })
-  );
 
-  self.skipWaiting();
-});
-////
-self.addEventListener("activate", (evt) => {
-  evt.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-self.addEventListener("fetch", (evt) => {
-  // cache successful GET requests to the API
-  if (evt.request.url.includes("/api/") && evt.request.method === "GET") {
-    evt.respondWith(
-      caches
-        .open(DATA_CACHE_NAME)
-        .then((cache) => {
-          return fetch(evt.request)
-            .then((response) => {
-              // If the response was good, clone it and store it in the cache.
-              if (response.status === 200) {
-                cache.put(evt.request, response.clone());
-              }
+const STATIC_CACHE = `static-cache-v1`;
+const RUNTIME_CACHE = `runtime-cache`;
 
-              return response;
-            })
-            .catch(() => {
-              // Network request failed, try to get it from the cache.
-              return cache.match(evt.request);
-            });
-        })
-        .catch((err) => console.log(err))
+self.addEventListener(`install`, event => {
+    event.waitUntil(
+        caches
+            .open(STATIC_CACHE)
+            .then(cache => cache.addAll(FILES_TO_CACHE))
+            .then(() => self.skipWaiting())
     );
+});
 
-    // stop execution of the fetch event callback
-    return;
-  }
+self.addEventListener(`activate`, event => {
+    const currentCaches = [STATIC_CACHE, RUNTIME_CACHE];
+    event.waitUntil(
+        caches
+            .keys()
+            .then(cacheNames =>
+                // return array of cache names that are old to delete
+                cacheNames.filter(cacheName => !currentCaches.includes(cacheName))
+            )
+            .then(cachesToDelete =>
+                Promise.all(
+                    cachesToDelete.map(cacheToDelete => caches.delete(cacheToDelete))
+                )
+            )
+            .then(() => self.clients.claim())
+    );
+});
 
-  // if the request is not for the API, serve static assets using
-  // "offline-first" approach.
-  evt.respondWith(
-    caches.match(evt.request).then((response) => {
-      return response || fetch(evt.request);
-    })
-  );
+self.addEventListener(`fetch`, event => {
+    if (
+        event.request.method !== `GET` ||
+        !event.request.url.startsWith(self.location.origin)
+    ) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    if (event.request.url.includes(`/api/transaction`)) {
+        event.respondWith(
+            caches.open(RUNTIME_CACHE).then(cache =>
+                fetch(event.request)
+                    .then(response => {
+                        cache.put(event.request, response.clone());
+                        return response;
+                    })
+                    .catch(() => caches.match(event.request))
+            )
+        );
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+
+            return caches
+                .open(RUNTIME_CACHE)
+                .then(cache =>
+                    fetch(event.request).then(response =>
+                        cache.put(event.request, response.clone()).then(() => response)
+                    )
+                );
+        })
+    );
 });

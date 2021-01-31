@@ -1,6 +1,9 @@
 # BUDGET TRACKER APP
 
-LINK TO DEPLOYED SITE: https://pacific-cove-59943.herokuapp.com/
+## LINK TO DEPLOYED SITE: https://pacific-cove-59943.herokuapp.com/
+
+## Demo
+<img src="assets/gif.gif">
 
 
 Add functionality to our existing Budget Tracker application to allow for offline access and functionality.
