@@ -1,12 +1,19 @@
-# BUDGET TRACKER APP
+## Description
+This application uses Progressive Web Application so the user can access, update, and view their Budget both offline and online. Data will repopulate once back online. 
 
 ## LINK TO DEPLOYED SITE: https://young-atoll-23054.herokuapp.com/
 
 ## Demo
 <img src="assets/gif.gif">
 
-## Description
-This application uses Progressive Web Application so the user can access, update, and view their Budget both offline and online. Data will repopulate once back online. 
+## Techonologies
+jQuery
+Express
+MongoDB
+Mongoose
+IndexedDB
+Bootstrap
+
 
 
 ## User Story
@@ -18,12 +25,5 @@ SO THAT my account balance is accurate when I am traveling
 
 Giving users a fast and easy way to track their money is important, but allowing them to access that information anytime is even more important. Having offline functionality is paramount to our applications success.
 
-## Techonologies
-jQuery
-Express
-MongoDB
-Mongoose
-IndexedDB
-Bootstrap
 
 
