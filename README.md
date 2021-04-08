@@ -6,6 +6,11 @@ This application uses Progressive Web Application so the user can access, update
 ## Demo
 <img src="assets/gif.gif">
 
+## Instructions
+  npm i express
+  npm i mongoose
+  npm start
+
 ## Techonologies
 jQuery
 Express
